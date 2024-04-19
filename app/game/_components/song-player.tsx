@@ -8,13 +8,19 @@ import { cn } from '@/lib/utils';
 const MAX_AUDIO_LENGTH = 10;
 const PROGRESSES = [1, 2, 4, 7, 10];
 
-export function SongPlayer({ src, attempt }: { src: string; attempt: number }) {
+export default function SongPlayer({
+  src,
+  attempt,
+}: {
+  src: string;
+  attempt: number;
+}) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
 
-  const allowedAudioLength = PROGRESSES[attempt - 1];
+  const allowedAudioLength = PROGRESSES[attempt];
 
   return (
     <>
@@ -33,7 +39,7 @@ export function SongPlayer({ src, attempt }: { src: string; attempt: number }) {
             <div
               key={index}
               className={cn(
-                attempt >= index + 1 ? 'bg-gray-700' : 'bg-transparent'
+                attempt >= index ? 'bg-gray-700' : 'bg-transparent'
               )}
               style={{
                 gridColumn:

@@ -1,18 +1,64 @@
 'use client';
 
-import { useState } from 'react';
-import { BoxSelect, Check, Info, Search, X } from 'lucide-react';
+import { FormEvent, useEffect, useState } from 'react';
+import { Info, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SongPlayer } from './_components/song-player';
+import GuessResults from './_components/guess-results';
+import SongPlayer from './_components/song-player';
+import { playlist } from '@/data';
 
 const MAX_ATTEMPT = 5;
 const SKIPS = [1, 2, 3, 3];
-const SONG_PREVIEW_URL =
-  'https://p.scdn.co/mp3-preview/dba15da5409f3c808022cf927c0ff8581f717aa4?cid=cfe923b2d660439caf2b557b21f31221';
+const SAMPLE_TRACK = playlist.tracks.items[0].track;
+
+function getAnswer(track: any) {
+  return {
+    title: track.name,
+    artist: track.artists.map((_artist: any) => _artist.name).join(', '),
+    albumImage:
+      track.album.images.find(
+        (image: { height: number; width: number; url: string }) =>
+          image.width === 300
+      )?.url ?? track.album.images[0].url,
+    url: track.external_urls.spotify,
+    previewUrl: track.preview_url,
+  };
+}
 
 export default function GamePage() {
+  const [gameStatus, setGameStatus] = useState<'running' | 'won' | 'lost'>(
+    'running'
+  );
+  const [guesses, setGuesses] = useState<string[]>([]);
   const [attempt, setAttepmt] = useState(1);
+  const [tentativeGuess, setTentativeGuess] = useState('');
+  const [answer, setAnswer] = useState(getAnswer(SAMPLE_TRACK));
+
+  useEffect(() => {
+    const randomNum = Math.floor(Math.random() * playlist.tracks.items.length);
+
+    setAnswer(getAnswer(playlist.tracks.items[randomNum].track));
+  }, []);
+
+  function handleSubmitGuess(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (tentativeGuess) {
+      setTentativeGuess('');
+
+      const nextGuesses = [...guesses, tentativeGuess.toLowerCase()];
+      setGuesses(nextGuesses);
+
+      if (tentativeGuess.toLowerCase() === answer.title.toLowerCase()) {
+        setGameStatus('won');
+      } else if (nextGuesses.length >= MAX_ATTEMPT) {
+        setGameStatus('lost');
+      } else {
+        setAttepmt(attempt + 1);
+      }
+    }
+  }
 
   return (
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
@@ -22,59 +68,74 @@ export default function GamePage() {
         <h1 className="flex-1 text-center text-2xl font-bold tracking-tight">
           HeardleSpot
         </h1>
-        <span className="text-sm font-medium text-gray-300">1/10</span>
+        <span className="text-sm font-medium text-gray-300">Demo</span>
       </div>
 
-      {/* guesses */}
-      <div className="my-4 w-full max-w-xl space-y-2.5 p-1.5 sm:space-y-3">
-        <div className="flex h-12 w-full items-center rounded border border-gray-600 p-1.5 text-gray-500">
-          <BoxSelect className="mr-2 text-gray-400/60" />
-          <p className="truncate">Skipped</p>
-        </div>
-        <div className="flex h-12 w-full items-center rounded border border-gray-600 p-1.5 text-gray-500">
-          <X className="mr-2 text-red-400/60" />
-          <p className="truncate">Style - Taylor Swift</p>
-        </div>
-        <div className="flex h-12 w-full items-center rounded border border-gray-300 p-1.5">
-          <Check className="mr-2 text-emerald-400" />
-          <p className="truncate">Red - Taylor Swift</p>
-        </div>
-        <div className="flex h-12 w-full items-center rounded border border-gray-500 p-1.5"></div>
-        <div className="flex h-12 w-full items-center rounded border border-gray-500 p-1.5"></div>
-      </div>
+      <GuessResults guesses={guesses} answer={answer} gameStatus={gameStatus} />
 
       <div className="flex h-full w-full flex-col justify-end p-2">
-        <SongPlayer src={SONG_PREVIEW_URL} attempt={attempt} />
+        <SongPlayer
+          src={answer.previewUrl}
+          attempt={gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1}
+        />
 
         {/* guess input */}
-        <div className="relative mt-3 rounded">
+        <form
+          className="relative mt-3 rounded"
+          id="guess-form"
+          onSubmit={handleSubmitGuess}
+        >
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
           </div>
           <Input
             type="text"
             name="guess"
+            value={tentativeGuess}
+            required
+            disabled={gameStatus !== 'running'}
             placeholder="Enter your guess"
             className="py-1.5 pl-10"
+            onChange={(e) => setTentativeGuess(e.target.value)}
           />
-        </div>
+        </form>
 
         {/* skip & submit button */}
         <div className="mt-3 flex justify-between">
           <Button
             variant="secondary"
+            disabled={gameStatus !== 'running'}
             onClick={() => {
+              setGuesses([...guesses, 'Skipped']);
+
               if (attempt < MAX_ATTEMPT) {
                 setAttepmt(attempt + 1);
               } else {
-                console.log('end game');
-                setAttepmt(1);
+                setGameStatus('lost');
               }
             }}
           >
             Skip{attempt < MAX_ATTEMPT ? ` (+${SKIPS[attempt - 1]}s)` : null}
           </Button>
-          <Button>Submit</Button>
+
+          {gameStatus === 'running' && (
+            <Button type="submit" form="guess-form">
+              Submit
+            </Button>
+          )}
+
+          {gameStatus !== 'running' && (
+            <Button
+              onClick={() => {
+                setAttepmt(1);
+                setGuesses([]);
+                setGameStatus('running');
+                setTentativeGuess('');
+              }}
+            >
+              Try again
+            </Button>
+          )}
         </div>
       </div>
     </main>
