@@ -1,8 +1,19 @@
-import { BoxSelect, Check, Info, Play, Search, X } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { BoxSelect, Check, Info, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SongPlayer } from './_components/song-player';
+
+const MAX_ATTEMPT = 5;
+const SKIPS = [1, 2, 3, 3];
+const SONG_PREVIEW_URL =
+  'https://p.scdn.co/mp3-preview/dba15da5409f3c808022cf927c0ff8581f717aa4?cid=cfe923b2d660439caf2b557b21f31221';
 
 export default function GamePage() {
+  const [attempt, setAttepmt] = useState(1);
+
   return (
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
       {/* header */}
@@ -33,28 +44,7 @@ export default function GamePage() {
       </div>
 
       <div className="flex h-full w-full flex-col justify-end p-2">
-        {/* song player */}
-        <div className="grid h-3 w-full grid-cols-10 divide-x divide-gray-500 border border-gray-500">
-          <div className="col-span-1 bg-gray-700"></div>
-          <div className="col-span-1"></div>
-          <div className="col-span-2"></div>
-          <div className="col-span-3"></div>
-          <div className="col-span-3"></div>
-        </div>
-        <div className="mt-2 flex items-center">
-          <span className="font-medium">0:00</span>
-
-          <div className="flex flex-1 justify-center">
-            <Button
-              variant="outline"
-              className="size-14 rounded-full dark:border-gray-300"
-            >
-              <Play className="size-8 text-gray-200" />
-            </Button>
-          </div>
-
-          <span className="font-medium">0:10</span>
-        </div>
+        <SongPlayer src={SONG_PREVIEW_URL} attempt={attempt} />
 
         {/* guess input */}
         <div className="relative mt-3 rounded">
@@ -71,7 +61,19 @@ export default function GamePage() {
 
         {/* skip & submit button */}
         <div className="mt-3 flex justify-between">
-          <Button variant="secondary">Skip (+1s)</Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (attempt < MAX_ATTEMPT) {
+                setAttepmt(attempt + 1);
+              } else {
+                console.log('end game');
+                setAttepmt(1);
+              }
+            }}
+          >
+            Skip{attempt < MAX_ATTEMPT ? ` (+${SKIPS[attempt - 1]}s)` : null}
+          </Button>
           <Button>Submit</Button>
         </div>
       </div>
