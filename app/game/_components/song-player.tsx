@@ -26,17 +26,24 @@ export function SongPlayer({ src, attempt }: { src: string; attempt: number }) {
             maxWidth: `${allowedAudioLength * 10}%`,
           }}
         ></div>
-        {PROGRESSES.map((progress, index) => (
-          <div
-            key={index}
-            className={cn(
-              index === 0
-                ? 'col-span-1'
-                : `col-span-${progress - PROGRESSES[index - 1]}`,
-              attempt >= index + 1 ? 'bg-gray-700' : null
-            )}
-          ></div>
-        ))}
+        {PROGRESSES.map((progress, index) => {
+          const spanNum = progress - PROGRESSES[index - 1];
+
+          return (
+            <div
+              key={index}
+              className={cn(
+                attempt >= index + 1 ? 'bg-gray-700' : 'bg-transparent'
+              )}
+              style={{
+                gridColumn:
+                  index === 0
+                    ? 'span 1 / span 1'
+                    : `span ${spanNum} / span ${spanNum}`,
+              }}
+            ></div>
+          );
+        })}
       </div>
 
       <div className="mt-2 flex items-center">
