@@ -1,4 +1,4 @@
-const playlist = {
+export const playlist = {
   collaborative: false,
   description: 'The biggest songs of the 2010s. Cover: Billie Eilish',
   external_urls: {

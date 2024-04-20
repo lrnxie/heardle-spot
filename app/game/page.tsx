@@ -1,18 +1,23 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Info } from 'lucide-react';
+import Link from 'next/link';
+import { CircleUserRound, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GuessResults from './_components/guess-results';
 import GuessInput from './_components/guess-input';
 import SongPlayer from './_components/song-player';
-import { tracks } from '@/data';
-import { MAX_ATTEMPT, SKIP_STEPS } from '@/lib/constants';
+import Result from './_components/result';
+import { cn } from '@/lib/utils';
+import { MAX_ATTEMPT, SKIP_STEPS, TOTAL_QUESTIONS } from '@/lib/constants';
 import { GuessType } from '@/lib/types';
+import { tracks } from '@/data';
 
 const SAMPLE_TRACK = tracks[0];
 
 export default function GamePage() {
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [gameStatus, setGameStatus] = useState<'running' | 'won' | 'lost'>(
     'running'
   );
@@ -36,6 +41,7 @@ export default function GamePage() {
 
       if (tentativeGuess.displayName === answer.displayName) {
         setGameStatus('won');
+        setScore(score + 10 - 2 * (attempt - 1));
       } else if (nextGuesses.length >= MAX_ATTEMPT) {
         setGameStatus('lost');
       } else {
@@ -49,70 +55,94 @@ export default function GamePage() {
       <div className="flex w-full items-center border-b px-2 py-2.5">
         <Info className="size-5 text-gray-300" />
         <h1 className="flex-1 text-center text-2xl font-bold tracking-tight">
-          HeardleSpot
+          <Link href="/">HeardleSpot</Link>
         </h1>
-        <span className="text-sm font-medium text-gray-300">Demo</span>
+        <CircleUserRound className="size-5 text-gray-300" />
       </div>
 
-      <GuessResults guesses={guesses} answer={answer} gameStatus={gameStatus} />
-
-      <div className="flex h-full w-full flex-col justify-end p-2">
-        <SongPlayer
-          src={answer.previewUrl}
-          attempt={gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1}
-        />
-
-        <form
-          className="mt-3 rounded"
-          id="guess-form"
-          onSubmit={handleSubmitGuess}
-        >
-          <GuessInput
-            tentativeGuess={tentativeGuess}
-            setTentativeGuess={setTentativeGuess}
+      {currentQuestion < TOTAL_QUESTIONS ? (
+        <>
+          <GuessResults
+            guesses={guesses}
+            answer={answer}
             gameStatus={gameStatus}
           />
-        </form>
 
-        <div className="mt-3 flex justify-between">
-          <Button
-            variant="secondary"
-            disabled={gameStatus !== 'running'}
-            onClick={() => {
-              setGuesses([...guesses, { displayName: 'Skipped' }]);
-
-              if (attempt < MAX_ATTEMPT) {
-                setAttepmt(attempt + 1);
-              } else {
-                setGameStatus('lost');
+          <div className="flex h-full w-full flex-col justify-end p-2">
+            <SongPlayer
+              src={answer.previewUrl}
+              attempt={
+                gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1
               }
-            }}
-          >
-            Skip
-            {attempt < MAX_ATTEMPT ? ` (+${SKIP_STEPS[attempt - 1]}s)` : null}
-          </Button>
+            />
 
-          {gameStatus === 'running' && (
-            <Button type="submit" form="guess-form">
-              Submit
-            </Button>
-          )}
-
-          {gameStatus !== 'running' && (
-            <Button
-              onClick={() => {
-                setAttepmt(1);
-                setGuesses([]);
-                setGameStatus('running');
-                setTentativeGuess(null);
-                setAnswer(tracks[Math.floor(Math.random() * tracks.length)]);
-              }}
+            <form
+              className="mt-3 rounded"
+              id="guess-form"
+              onSubmit={handleSubmitGuess}
             >
-              Try again
-            </Button>
-          )}
-        </div>
-      </div>
+              <GuessInput
+                tentativeGuess={tentativeGuess}
+                setTentativeGuess={setTentativeGuess}
+                gameStatus={gameStatus}
+              />
+            </form>
+
+            <div
+              className={cn(
+                'mt-3 flex',
+                gameStatus === 'running' ? 'justify-between' : 'justify-end'
+              )}
+            >
+              {gameStatus === 'running' ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setGuesses([...guesses, { displayName: 'Skipped' }]);
+                      setTentativeGuess(null);
+
+                      if (attempt < MAX_ATTEMPT) {
+                        setAttepmt(attempt + 1);
+                      } else {
+                        setGameStatus('lost');
+                      }
+                    }}
+                  >
+                    Skip
+                    {attempt < MAX_ATTEMPT
+                      ? ` (+${SKIP_STEPS[attempt - 1]}s)`
+                      : null}
+                  </Button>
+
+                  <Button type="submit" form="guess-form">
+                    Submit
+                  </Button>
+                </>
+              ) : null}
+
+              {gameStatus !== 'running' ? (
+                <Button
+                  onClick={() => {
+                    setAttepmt(1);
+                    setGuesses([]);
+                    setGameStatus('running');
+                    setTentativeGuess(null);
+                    setAnswer(
+                      tracks[Math.floor(Math.random() * tracks.length)]
+                    );
+                    setCurrentQuestion(currentQuestion + 1);
+                  }}
+                >
+                  {currentQuestion === TOTAL_QUESTIONS - 1 ? 'Result' : 'Next'}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : (
+        <Result score={score} />
+      )}
     </main>
   );
 }
