@@ -17,8 +17,8 @@ export default function GuessInput({
   const [query, setQuery] = useState('');
 
   const filteredTracks =
-    query === ''
-      ? tracks
+    query.trim() === ''
+      ? []
       : tracks.filter((track) => {
           return track.displayName.toLowerCase().includes(query.toLowerCase());
         });
@@ -29,6 +29,7 @@ export default function GuessInput({
       value={tentativeGuess}
       onChange={setTentativeGuess}
       className="relative"
+      disabled={gameStatus !== 'running'}
     >
       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -39,7 +40,6 @@ export default function GuessInput({
         name="guess"
         placeholder="Enter your guess"
         required
-        aria-disabled={gameStatus !== 'running'}
         className="w-full rounded border-0 bg-transparent py-2 pl-10 ring-1 ring-inset ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-gray-300 sm:text-sm sm:leading-6"
         onChange={(event) => setQuery(event.target.value)}
         displayValue={(track: TrackType) => track?.displayName}
