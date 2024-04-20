@@ -48,7 +48,7 @@ export default function GuessInput({
       <div className="relative mt-2">
         {filteredTracks.length > 0 && (
           <Combobox.Options
-            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-gray-500 bg-gray-950 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
             style={{ bottom: 'calc(100% + 50px)' }}
           >
             {filteredTracks.map((track) => (
@@ -57,9 +57,8 @@ export default function GuessInput({
                 value={track}
                 className={({ active }) =>
                   cn(
-                    'relative cursor-default select-none py-2 pl-3 pr-9',
-                    active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-                    'bottom-full'
+                    'relative cursor-default select-none py-2 pl-3 pr-9 text-white',
+                    active && 'bg-gray-800'
                   )
                 }
               >
@@ -75,12 +74,7 @@ export default function GuessInput({
                     </span>
 
                     {selected && (
-                      <span
-                        className={cn(
-                          'absolute inset-y-0 right-0 flex items-center pr-4',
-                          active ? 'text-white' : 'text-indigo-600'
-                        )}
-                      >
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-white">
                         <CheckIcon className="h-5 w-5" aria-hidden="true" />
                       </span>
                     )}
