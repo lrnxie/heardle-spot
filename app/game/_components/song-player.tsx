@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,12 @@ export default function SongPlayer({
   const [progressPercent, setProgressPercent] = useState(0);
 
   const allowedAudioLength = AUDIO_PROGRESSES[attempt];
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentProgress(0);
+    setProgressPercent(0);
+  }, [src]);
 
   return (
     <>
@@ -100,6 +106,8 @@ export default function SongPlayer({
             }
           }}
           onPause={() => {
+            setIsPlaying(false);
+
             if (audioRef.current) {
               audioRef.current.currentTime = 0;
             }
