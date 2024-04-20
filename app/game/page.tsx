@@ -105,6 +105,7 @@ export default function GamePage() {
                 setGuesses([]);
                 setGameStatus('running');
                 setTentativeGuess(null);
+                setAnswer(tracks[Math.floor(Math.random() * tracks.length)]);
               }}
             >
               Try again
