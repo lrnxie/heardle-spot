@@ -1,56 +1,40 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Info, Search } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import GuessResults from './_components/guess-results';
+import GuessInput from './_components/guess-input';
 import SongPlayer from './_components/song-player';
-import { playlist } from '@/data';
+import { tracks } from '@/data';
+import { MAX_ATTEMPT, SKIP_STEPS } from '@/lib/constants';
+import { GuessType } from '@/lib/types';
 
-const MAX_ATTEMPT = 5;
-const SKIPS = [1, 2, 3, 3];
-const SAMPLE_TRACK = playlist.tracks.items[0].track;
-
-function getAnswer(track: any) {
-  return {
-    title: track.name,
-    artist: track.artists.map((_artist: any) => _artist.name).join(', '),
-    albumImage:
-      track.album.images.find(
-        (image: { height: number; width: number; url: string }) =>
-          image.width === 300
-      )?.url ?? track.album.images[0].url,
-    url: track.external_urls.spotify,
-    previewUrl: track.preview_url,
-  };
-}
+const SAMPLE_TRACK = tracks[0];
 
 export default function GamePage() {
   const [gameStatus, setGameStatus] = useState<'running' | 'won' | 'lost'>(
     'running'
   );
-  const [guesses, setGuesses] = useState<string[]>([]);
+  const [guesses, setGuesses] = useState<GuessType[]>([]);
   const [attempt, setAttepmt] = useState(1);
-  const [tentativeGuess, setTentativeGuess] = useState('');
-  const [answer, setAnswer] = useState(getAnswer(SAMPLE_TRACK));
+  const [tentativeGuess, setTentativeGuess] = useState<GuessType | null>(null);
+  const [answer, setAnswer] = useState(SAMPLE_TRACK);
 
   useEffect(() => {
-    const randomNum = Math.floor(Math.random() * playlist.tracks.items.length);
-
-    setAnswer(getAnswer(playlist.tracks.items[randomNum].track));
+    setAnswer(tracks[Math.floor(Math.random() * tracks.length)]);
   }, []);
 
   function handleSubmitGuess(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (tentativeGuess) {
-      setTentativeGuess('');
+    if (!!tentativeGuess) {
+      setTentativeGuess(null);
 
-      const nextGuesses = [...guesses, tentativeGuess.toLowerCase()];
+      const nextGuesses = [...guesses, tentativeGuess];
       setGuesses(nextGuesses);
 
-      if (tentativeGuess.toLowerCase() === answer.title.toLowerCase()) {
+      if (tentativeGuess.displayName === answer.displayName) {
         setGameStatus('won');
       } else if (nextGuesses.length >= MAX_ATTEMPT) {
         setGameStatus('lost');
@@ -62,7 +46,6 @@ export default function GamePage() {
 
   return (
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
-      {/* header */}
       <div className="flex w-full items-center border-b px-2 py-2.5">
         <Info className="size-5 text-gray-300" />
         <h1 className="flex-1 text-center text-2xl font-bold tracking-tight">
@@ -79,34 +62,24 @@ export default function GamePage() {
           attempt={gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1}
         />
 
-        {/* guess input */}
         <form
-          className="relative mt-3 rounded"
+          className="mt-3 rounded"
           id="guess-form"
           onSubmit={handleSubmitGuess}
         >
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <Input
-            type="text"
-            name="guess"
-            value={tentativeGuess}
-            required
-            disabled={gameStatus !== 'running'}
-            placeholder="Enter your guess"
-            className="py-1.5 pl-10"
-            onChange={(e) => setTentativeGuess(e.target.value)}
+          <GuessInput
+            tentativeGuess={tentativeGuess}
+            setTentativeGuess={setTentativeGuess}
+            gameStatus={gameStatus}
           />
         </form>
 
-        {/* skip & submit button */}
         <div className="mt-3 flex justify-between">
           <Button
             variant="secondary"
             disabled={gameStatus !== 'running'}
             onClick={() => {
-              setGuesses([...guesses, 'Skipped']);
+              setGuesses([...guesses, { displayName: 'Skipped' }]);
 
               if (attempt < MAX_ATTEMPT) {
                 setAttepmt(attempt + 1);
@@ -115,7 +88,8 @@ export default function GamePage() {
               }
             }}
           >
-            Skip{attempt < MAX_ATTEMPT ? ` (+${SKIPS[attempt - 1]}s)` : null}
+            Skip
+            {attempt < MAX_ATTEMPT ? ` (+${SKIP_STEPS[attempt - 1]}s)` : null}
           </Button>
 
           {gameStatus === 'running' && (
@@ -130,7 +104,7 @@ export default function GamePage() {
                 setAttepmt(1);
                 setGuesses([]);
                 setGameStatus('running');
-                setTentativeGuess('');
+                setTentativeGuess(null);
               }}
             >
               Try again

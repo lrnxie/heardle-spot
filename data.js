@@ -1,4 +1,4 @@
-export const playlist = {
+const playlist = {
   collaborative: false,
   description: 'The biggest songs of the 2010s. Cover: Billie Eilish',
   external_urls: {
@@ -40451,3 +40451,19 @@ export const playlist = {
   type: 'playlist',
   uri: 'spotify:playlist:37i9dQZF1DX5Ejj0EkURtP',
 };
+
+export const tracks = playlist.tracks.items.map((item) => {
+  const track = item.track;
+
+  return {
+    id: track.id,
+    title: track.name,
+    artist: track.artists.map((_artist) => _artist.name).join(', '),
+    albumImage:
+      track.album.images.find((image) => image.width === 300)?.url ??
+      track.album.images[0].url,
+    url: track.external_urls.spotify,
+    previewUrl: track.preview_url,
+    displayName: `${track.name} - ${track.artists.map((_artist) => _artist.name).join(', ')}`,
+  };
+});

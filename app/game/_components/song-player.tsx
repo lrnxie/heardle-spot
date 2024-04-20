@@ -4,9 +4,7 @@ import { useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-const MAX_AUDIO_LENGTH = 10;
-const PROGRESSES = [1, 2, 4, 7, 10];
+import { AUDIO_PROGRESSES, MAX_AUDIO_LENGTH } from '@/lib/constants';
 
 export default function SongPlayer({
   src,
@@ -20,7 +18,7 @@ export default function SongPlayer({
   const [currentProgress, setCurrentProgress] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
 
-  const allowedAudioLength = PROGRESSES[attempt];
+  const allowedAudioLength = AUDIO_PROGRESSES[attempt];
 
   return (
     <>
@@ -32,8 +30,8 @@ export default function SongPlayer({
             maxWidth: `${allowedAudioLength * 10}%`,
           }}
         ></div>
-        {PROGRESSES.map((progress, index) => {
-          const spanNum = progress - PROGRESSES[index - 1];
+        {AUDIO_PROGRESSES.map((progress, index) => {
+          const spanNum = progress - AUDIO_PROGRESSES[index - 1];
 
           return (
             <div
