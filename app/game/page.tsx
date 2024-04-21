@@ -1,8 +1,6 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { CircleUserRound, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GuessResults from './_components/guess-results';
 import GuessInput from './_components/guess-input';
@@ -52,14 +50,6 @@ export default function GamePage() {
 
   return (
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
-      <div className="flex w-full items-center border-b px-2 py-2.5">
-        <Info className="size-5 text-gray-300" />
-        <h1 className="flex-1 text-center text-2xl font-bold tracking-tight">
-          <Link href="/">HeardleSpot</Link>
-        </h1>
-        <CircleUserRound className="size-5 text-gray-300" />
-      </div>
-
       {currentQuestion < TOTAL_QUESTIONS ? (
         <>
           <GuessResults

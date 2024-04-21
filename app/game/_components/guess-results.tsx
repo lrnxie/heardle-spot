@@ -14,7 +14,7 @@ export default function GuessResults({
   gameStatus: 'running' | 'won' | 'lost';
 }) {
   return (
-    <div className="my-4 w-full max-w-xl space-y-2.5 p-1.5 sm:space-y-3">
+    <div className="mb-4 mt-16 w-full max-w-xl space-y-2.5 p-1.5 sm:space-y-3">
       {range(1, MAX_ATTEMPT + 1).map((num, index) => {
         const thisGuess = guesses[index];
         const isCorrectGuess = thisGuess?.displayName === answer.displayName;

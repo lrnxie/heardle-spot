@@ -5,7 +5,7 @@ import { playlist } from '@/data';
 
 export default function Result({ score }: { score: number }) {
   return (
-    <div className="mx-auto my-6 flex max-w-xl flex-col items-center gap-y-4">
+    <div className="mx-auto mt-16 flex max-w-xl flex-col items-center gap-y-4">
       <h2 className="text-gray-200">Your score is:</h2>
       <span className="text-4xl font-semibold">{score}</span>
 
