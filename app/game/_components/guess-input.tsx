@@ -17,7 +17,7 @@ export default function GuessInput({
   const [query, setQuery] = useState('');
 
   const filteredTracks =
-    query.trim() === ''
+    query.trim().length < 3
       ? []
       : tracks.filter((track) => {
           return track.displayName.toLowerCase().includes(query.toLowerCase());
