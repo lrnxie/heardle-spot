@@ -28,6 +28,9 @@ export default function RootLayout({
     <ClerkProvider
       appearance={{
         baseTheme: dark,
+        variables: {
+          colorInputText: 'black',
+        },
         elements: {
           userButtonAvatarBox: 'size-6',
         },

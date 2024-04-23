@@ -13,7 +13,7 @@ export default function Home() {
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center justify-center">
       <div className="flex grow flex-col items-center justify-center">
         <h1 className="p-2 text-4xl font-bold tracking-tight">HeardleSpot</h1>
-        <h2 className="p-2 text-center font-medium text-gray-300">
+        <h2 className="p-2 text-center text-sm text-gray-300">
           How well do you know your favorite songs on Spotify?
         </h2>
 

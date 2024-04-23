@@ -1,4 +1,4 @@
-export const playlist = {
+export const DEFAULT_PLAYLIST = {
   collaborative: false,
   description: 'The biggest songs of the 2010s. Cover: Billie Eilish',
   external_urls: {
@@ -40452,7 +40452,7 @@ export const playlist = {
   uri: 'spotify:playlist:37i9dQZF1DX5Ejj0EkURtP',
 };
 
-export const tracks = playlist.tracks.items.map((item) => {
+export const DEFAULT_TRACKS = DEFAULT_PLAYLIST.tracks.items.map((item) => {
   const track = item.track;
 
   return {

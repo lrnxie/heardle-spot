@@ -1,19 +1,21 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GuessResults from './_components/guess-results';
 import GuessInput from './_components/guess-input';
 import SongPlayer from './_components/song-player';
 import Result from './_components/result';
-import { cn } from '@/lib/utils';
+import { cn, randomPick } from '@/lib/utils';
 import { MAX_ATTEMPT, SKIP_STEPS, TOTAL_QUESTIONS } from '@/lib/constants';
-import { GuessType } from '@/lib/types';
-import { tracks } from '@/data';
-
-const SAMPLE_TRACK = tracks[0];
+import { GuessType, TrackType } from '@/lib/types';
+import { DEFAULT_TRACKS } from '@/data';
 
 export default function GamePage() {
+  const { isLoaded, userId } = useAuth();
+
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [gameStatus, setGameStatus] = useState<'running' | 'won' | 'lost'>(
@@ -22,11 +24,26 @@ export default function GamePage() {
   const [guesses, setGuesses] = useState<GuessType[]>([]);
   const [attempt, setAttepmt] = useState(1);
   const [tentativeGuess, setTentativeGuess] = useState<GuessType | null>(null);
-  const [answer, setAnswer] = useState(SAMPLE_TRACK);
+  const [answers, setAnswers] = useState<TrackType[]>([]);
+  const [avilableTracks, setAvilableTracks] = useState(DEFAULT_TRACKS);
 
   useEffect(() => {
-    setAnswer(tracks[Math.floor(Math.random() * tracks.length)]);
-  }, []);
+    async function fetchTopItems() {
+      const response = await fetch('/api/spotify');
+      const data = await response.json();
+
+      setAvilableTracks(data);
+      setAnswers(randomPick(data, TOTAL_QUESTIONS));
+    }
+
+    if (isLoaded) {
+      if (userId) {
+        fetchTopItems();
+      } else {
+        setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
+      }
+    }
+  }, [isLoaded, userId]);
 
   function handleSubmitGuess(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,7 +54,7 @@ export default function GamePage() {
       const nextGuesses = [...guesses, tentativeGuess];
       setGuesses(nextGuesses);
 
-      if (tentativeGuess.displayName === answer.displayName) {
+      if (tentativeGuess.displayName === answers[currentQuestion].displayName) {
         setGameStatus('won');
         setScore(score + 10 - 2 * (attempt - 1));
       } else if (nextGuesses.length >= MAX_ATTEMPT) {
@@ -50,17 +67,22 @@ export default function GamePage() {
 
   return (
     <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
-      {currentQuestion < TOTAL_QUESTIONS ? (
+      {answers.length === 0 ? (
+        <div className="mb-4 mt-24">
+          <LoaderCircle className="size-10 animate-spin text-gray-300" />
+        </div>
+      ) : currentQuestion < TOTAL_QUESTIONS ? (
         <>
           <GuessResults
             guesses={guesses}
-            answer={answer}
+            answers={answers}
             gameStatus={gameStatus}
+            currentQuestion={currentQuestion}
           />
 
           <div className="flex h-full w-full flex-col justify-end p-2">
             <SongPlayer
-              src={answer.previewUrl}
+              src={answers[currentQuestion].previewUrl}
               attempt={
                 gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1
               }
@@ -75,6 +97,7 @@ export default function GamePage() {
                 tentativeGuess={tentativeGuess}
                 setTentativeGuess={setTentativeGuess}
                 gameStatus={gameStatus}
+                guessOptions={avilableTracks}
               />
             </form>
 
@@ -118,9 +141,6 @@ export default function GamePage() {
                     setGuesses([]);
                     setGameStatus('running');
                     setTentativeGuess(null);
-                    setAnswer(
-                      tracks[Math.floor(Math.random() * tracks.length)]
-                    );
                     setCurrentQuestion(currentQuestion + 1);
                   }}
                 >
@@ -131,7 +151,7 @@ export default function GamePage() {
           </div>
         </>
       ) : (
-        <Result score={score} />
+        <Result score={score} tracks={avilableTracks} />
       )}
     </main>
   );

@@ -2,24 +2,25 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { CheckIcon, Search } from 'lucide-react';
 import { Combobox } from '@headlessui/react';
 import { cn } from '@/lib/utils';
-import { tracks } from '@/data';
 import { GuessType, TrackType } from '@/lib/types';
 
 export default function GuessInput({
   tentativeGuess,
   setTentativeGuess,
   gameStatus,
+  guessOptions,
 }: {
   tentativeGuess: GuessType | null;
   setTentativeGuess: Dispatch<SetStateAction<GuessType | null>>;
   gameStatus: 'running' | 'won' | 'lost';
+  guessOptions: TrackType[];
 }) {
   const [query, setQuery] = useState('');
 
   const filteredTracks =
     query.trim().length < 3
       ? []
-      : tracks.filter((track) => {
+      : guessOptions.filter((track) => {
           return track.displayName.toLowerCase().includes(query.toLowerCase());
         });
 

@@ -16,3 +16,8 @@ export function range(start: number, end: number | undefined, step = 1) {
   }
   return output;
 }
+
+export function randomPick<T>(array: T[], numItems: number): T[] {
+  const shuffled = array.slice().sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, numItems);
+}
