@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useAuth } from '@clerk/nextjs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,12 +8,12 @@ import { DEFAULT_PLAYLIST } from '@/data';
 export default function Result({
   score,
   tracks,
+  isDemo,
 }: {
   score: number;
   tracks: TrackType[];
+  isDemo: boolean;
 }) {
-  const { userId } = useAuth();
-
   return (
     <div className="mx-auto mt-16 flex max-w-xl flex-col items-center gap-y-4 px-2 pb-4">
       <h2 className="text-gray-200">Your score is:</h2>
@@ -22,10 +21,22 @@ export default function Result({
 
       <p className="text-center text-sm text-gray-200">
         Songs are random selected from{' '}
-        {userId ? 'your top-listened 100 songs' : 'this playlist'}
+        {isDemo ? 'this playlist' : 'your top-listened 100 songs'}
       </p>
 
-      {userId ? (
+      {isDemo ? (
+        <Link href={DEFAULT_PLAYLIST.external_urls.spotify} target="_blank">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={DEFAULT_PLAYLIST.images[0].url}
+            alt={`Image of playlist ${DEFAULT_PLAYLIST.name}`}
+            className="size-48"
+          />
+          <p className="mt-2 text-center text-sm text-gray-200">
+            {DEFAULT_PLAYLIST.name}
+          </p>
+        </Link>
+      ) : (
         <ScrollArea className="h-96 rounded border border-gray-500 sm:h-96">
           <ol className="">
             {tracks.map((track) => (
@@ -51,27 +62,15 @@ export default function Result({
             ))}
           </ol>
         </ScrollArea>
-      ) : (
-        <Link href={DEFAULT_PLAYLIST.external_urls.spotify} target="_blank">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={DEFAULT_PLAYLIST.images[0].url}
-            alt={`Image of playlist ${DEFAULT_PLAYLIST.name}`}
-            className="size-48"
-          />
-          <p className="mt-2 text-center text-sm text-gray-200">
-            {DEFAULT_PLAYLIST.name}
-          </p>
-        </Link>
       )}
 
-      {userId && <Button>Create playlist</Button>}
+      {!isDemo && <Button>Create playlist</Button>}
 
       <Link
         href="/"
         className={cn(
           buttonVariants({
-            variant: userId ? 'ghost' : 'default',
+            variant: isDemo ? 'default' : 'ghost',
           }),
           'mt-2'
         )}

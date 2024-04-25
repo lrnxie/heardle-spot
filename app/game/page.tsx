@@ -1,20 +1,20 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { FormEvent, useContext, useEffect, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
+import { cn, randomPick } from '@/lib/utils';
+import { MAX_ATTEMPT, SKIP_STEPS, TOTAL_QUESTIONS } from '@/lib/constants';
+import { GuessType, TrackType } from '@/lib/types';
+import { SessionContext } from '@/components/session-provider';
 import { Button } from '@/components/ui/button';
 import GuessResults from './_components/guess-results';
 import GuessInput from './_components/guess-input';
 import SongPlayer from './_components/song-player';
 import Result from './_components/result';
-import { cn, randomPick } from '@/lib/utils';
-import { MAX_ATTEMPT, SKIP_STEPS, TOTAL_QUESTIONS } from '@/lib/constants';
-import { GuessType, TrackType } from '@/lib/types';
 import { DEFAULT_TRACKS } from '@/data';
 
 export default function GamePage() {
-  const { isLoaded, userId } = useAuth();
+  const { isLoaded, user } = useContext(SessionContext);
 
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -26,6 +26,7 @@ export default function GamePage() {
   const [tentativeGuess, setTentativeGuess] = useState<GuessType | null>(null);
   const [answers, setAnswers] = useState<TrackType[]>([]);
   const [avilableTracks, setAvilableTracks] = useState(DEFAULT_TRACKS);
+  const [isDemo, setIsDemo] = useState(true);
 
   useEffect(() => {
     async function fetchTopItems() {
@@ -37,13 +38,14 @@ export default function GamePage() {
     }
 
     if (isLoaded) {
-      if (userId) {
+      if (user) {
         fetchTopItems();
+        setIsDemo(false);
       } else {
         setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
       }
     }
-  }, [isLoaded, userId]);
+  }, [isLoaded, user]);
 
   function handleSubmitGuess(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -151,7 +153,7 @@ export default function GamePage() {
           </div>
         </>
       ) : (
-        <Result score={score} tracks={avilableTracks} />
+        <Result score={score} tracks={avilableTracks} isDemo={isDemo} />
       )}
     </main>
   );

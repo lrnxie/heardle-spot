@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 import './globals.css';
-import Header from '@/components/header';
+import SessionProvider from '@/components/session-provider';
+import Header from './_components/header';
 import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -25,28 +24,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: dark,
-        variables: {
-          colorInputText: 'black',
-        },
-        elements: {
-          userButtonAvatarBox: 'size-6',
-        },
-      }}
-    >
-      <html lang="en">
-        <body
-          className={cn(
-            'reletive dark h-screen bg-black text-white antialiased',
-            inter.className
-          )}
-        >
+    <html lang="en">
+      <body
+        className={cn(
+          'reletive dark h-screen bg-black text-white antialiased',
+          inter.className
+        )}
+      >
+        <SessionProvider>
           <Header />
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

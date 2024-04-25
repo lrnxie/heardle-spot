@@ -13,3 +13,8 @@ export type GuessType =
   | {
       displayName: 'Skipped';
     };
+
+export type UserType = {
+  name: string;
+  avatar: string;
+};

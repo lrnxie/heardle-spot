@@ -1,23 +1,30 @@
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  const { userId } = auth();
+  const supabase = createClient();
+  const {
+    data: { user },
+    error: getUserError,
+  } = await supabase.auth.getUser();
 
-  if (!userId) {
+  if (!user || getUserError) {
     return Response.json({ message: 'User not found' });
   }
 
-  const clerkResponse = await clerkClient.users.getUserOauthAccessToken(
-    userId,
-    'oauth_spotify'
-  );
+  const {
+    data: { session },
+    error: getSessionError,
+  } = await supabase.auth.getSession();
+
+  if (getSessionError) {
+    return Response.json({ message: 'Unauthorized' });
+  }
 
   const spotifyResponse = await fetch(
     'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50',
     {
       headers: {
-        // @ts-ignore: Clerk response type bug
-        Authorization: `Bearer ${clerkResponse[0].token}`,
+        Authorization: `Bearer ${session?.provider_token}`,
       },
     }
   );
@@ -27,8 +34,7 @@ export async function GET() {
     'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&offset=50&limit=50',
     {
       headers: {
-        // @ts-ignore: Clerk response type bug
-        Authorization: `Bearer ${clerkResponse[0].token}`,
+        Authorization: `Bearer ${session?.provider_token}`,
       },
     }
   );
