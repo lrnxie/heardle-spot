@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import Link from 'next/link';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { TrackType } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { DEFAULT_PLAYLIST } from '@/data';
 
 export default function Result({
@@ -14,6 +16,26 @@ export default function Result({
   tracks: TrackType[];
   isDemo: boolean;
 }) {
+  const [isCreating, setIsCreating] = useState(false);
+
+  async function handleCreatePlaylist() {
+    setIsCreating(true);
+
+    const response = await fetch('/api/create-playlist', {
+      method: 'POST',
+      body: JSON.stringify({ tracks }),
+    });
+    const { success, message } = await response.json();
+
+    setIsCreating(false);
+
+    if (success) {
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+  }
+
   return (
     <div className="mx-auto mt-16 flex max-w-xl flex-col items-center gap-y-4 px-2 pb-4">
       <h2 className="text-gray-200">Your score is:</h2>
@@ -64,7 +86,11 @@ export default function Result({
         </ScrollArea>
       )}
 
-      {!isDemo && <Button>Create playlist</Button>}
+      {!isDemo && (
+        <Button onClick={handleCreatePlaylist} disabled={isCreating}>
+          {isCreating ? 'Creating...' : 'Create playlist'}
+        </Button>
+      )}
 
       <Link
         href="/"

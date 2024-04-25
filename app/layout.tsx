@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import SessionProvider from '@/components/session-provider';
+import { Toaster } from '@/components/ui/sonner';
 import Header from './_components/header';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +35,7 @@ export default function RootLayout({
         <SessionProvider>
           <Header />
           {children}
+          <Toaster position="bottom-center" />
         </SessionProvider>
       </body>
     </html>

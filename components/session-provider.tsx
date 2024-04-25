@@ -28,10 +28,18 @@ export default function SessionProvider({
       if (event === 'SIGNED_OUT') {
         setUser(null);
       } else if (session) {
-        setUser({
-          avatar: session.user.user_metadata.avatar_url,
-          name: session.user.user_metadata.full_name,
-        });
+        if (
+          session.user.identities?.some(
+            (identity) => identity.provider === 'spotify'
+          )
+        ) {
+          setUser({
+            name: session.user.user_metadata.full_name,
+            avatar: session.user.user_metadata.avatar_url,
+          });
+        } else {
+          setUser(null);
+        }
       }
     });
 

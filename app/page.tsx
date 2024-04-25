@@ -18,7 +18,7 @@ export default function Home() {
       provider: 'spotify',
       options: {
         redirectTo: `${window.location.origin}/game`,
-        scopes: 'user-top-read',
+        scopes: 'user-top-read playlist-modify-public',
       },
     });
 
@@ -45,7 +45,7 @@ export default function Home() {
             ) : (
               <>
                 <Button onClick={signInWithSpotify} disabled={isLoggingIn}>
-                  {isLoggingIn ? 'Logging in...' : 'Get started'}
+                  {isLoggingIn ? 'Loading...' : 'Get started'}
                 </Button>
                 <Link
                   href="/game"
