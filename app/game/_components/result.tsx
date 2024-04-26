@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { SquareArrowOutUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TrackType } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,7 +28,7 @@ export default function Result({
         method: 'POST',
         body: JSON.stringify({ tracks }),
       });
-      const { message, error } = await response.json();
+      const { playlistUrl, error } = await response.json();
 
       setIsCreating(false);
       toast.dismiss(loadingToast);
@@ -36,7 +37,18 @@ export default function Result({
         return toast.error(error);
       }
 
-      toast.success(message);
+      toast.success('Playlist has been created', {
+        action: (
+          <a
+            href={playlistUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants(), 'ml-auto h-6 px-2 text-xs')}
+          >
+            Open <SquareArrowOutUpRight className="ml-1 size-3" />
+          </a>
+        ),
+      });
     } catch (error) {
       console.error(error);
       setIsCreating(false);
@@ -50,7 +62,7 @@ export default function Result({
       <h2 className="text-gray-200">Your score is:</h2>
       <span className="text-4xl font-semibold">{score}</span>
 
-      <p className="text-center text-sm text-gray-200">
+      <p className="text-pretty text-center text-sm text-gray-200">
         Songs are random selected from{' '}
         {isDemo ? 'this playlist' : 'your top-listened 100 songs'}
       </p>

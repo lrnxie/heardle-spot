@@ -84,5 +84,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return Response.json({ message: 'Playlist has been created' });
+  return Response.json({ playlistUrl: playlistData.external_urls.spotify });
 }
