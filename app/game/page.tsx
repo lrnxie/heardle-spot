@@ -54,7 +54,7 @@ export default function GamePage() {
       }
     }
 
-    if (isLoaded) {
+    if (isLoaded && answers.length === 0) {
       if (user) {
         fetchTopItems();
       } else {
