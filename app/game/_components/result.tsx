@@ -20,19 +20,28 @@ export default function Result({
 
   async function handleCreatePlaylist() {
     setIsCreating(true);
+    const loadingToast = toast.loading('Creating playlist in Spotify...');
 
-    const response = await fetch('/api/create-playlist', {
-      method: 'POST',
-      body: JSON.stringify({ tracks }),
-    });
-    const { success, message } = await response.json();
+    try {
+      const response = await fetch('/api/create-playlist', {
+        method: 'POST',
+        body: JSON.stringify({ tracks }),
+      });
+      const { message, error } = await response.json();
 
-    setIsCreating(false);
+      setIsCreating(false);
+      toast.dismiss(loadingToast);
 
-    if (success) {
+      if (!response.ok) {
+        return toast.error(error);
+      }
+
       toast.success(message);
-    } else {
-      toast.error(message);
+    } catch (error) {
+      console.error(error);
+      setIsCreating(false);
+      toast.dismiss(loadingToast);
+      toast.error('Internal server error');
     }
   }
 

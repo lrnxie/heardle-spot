@@ -3,15 +3,19 @@ import { TrackType } from '@/lib/types';
 
 export async function POST(request: Request) {
   const { tracks } = await request.json();
-  const supabase = createClient();
 
+  if (!tracks || tracks.length === 0) {
+    return Response.json({ error: 'Bad request' }, { status: 400 });
+  }
+
+  const supabase = createClient();
   const {
     data: { user },
     error: getUserError,
   } = await supabase.auth.getUser();
 
   if (!user || getUserError) {
-    return Response.json({ success: false, message: 'User not found' });
+    return Response.json({ error: 'User not found' }, { status: 401 });
   }
 
   const {
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
       (identity) => identity.provider === 'spotify'
     )
   ) {
-    return Response.json({ success: false, message: 'Unauthorized' });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const createPlaylistResponse = await fetch(
@@ -47,11 +51,15 @@ export async function POST(request: Request) {
   );
   const playlistData = await createPlaylistResponse.json();
 
-  if (!playlistData.id) {
-    return Response.json({
-      success: false,
-      message: 'There was an error creating the playlist',
-    });
+  if (playlistData.error || !playlistData.id) {
+    return Response.json(
+      {
+        error:
+          playlistData.error.message ||
+          'There was an error creating the playlist',
+      },
+      { status: playlistData.error.status || 400 }
+    );
   }
 
   const addItemsResponse = await fetch(
@@ -69,7 +77,12 @@ export async function POST(request: Request) {
   );
   const itemsData = await addItemsResponse.json();
 
-  console.log(itemsData);
+  if (itemsData.error) {
+    return Response.json(
+      { error: itemsData.error.message },
+      { status: itemsData.error.status }
+    );
+  }
 
-  return Response.json({ success: true, message: 'Playlist has been created' });
+  return Response.json({ message: 'Playlist has been created' });
 }

@@ -8,7 +8,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user || getUserError) {
-    return Response.json({ message: 'User not found' });
+    return Response.json({ error: 'User not found' }, { status: 401 });
   }
 
   const {
@@ -16,29 +16,43 @@ export async function GET() {
     error: getSessionError,
   } = await supabase.auth.getSession();
 
-  if (getSessionError) {
-    return Response.json({ message: 'Unauthorized' });
+  if (!session || getSessionError) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const spotifyResponse = await fetch(
     'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50',
     {
       headers: {
-        Authorization: `Bearer ${session?.provider_token}`,
+        Authorization: `Bearer ${session.provider_token}`,
       },
     }
   );
   const spotifyData = await spotifyResponse.json();
 
+  if (spotifyData.error) {
+    return Response.json(
+      { error: spotifyData.error.message },
+      { status: spotifyData.error.status }
+    );
+  }
+
   const spotifyResponse2 = await fetch(
     'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&offset=50&limit=50',
     {
       headers: {
-        Authorization: `Bearer ${session?.provider_token}`,
+        Authorization: `Bearer ${session.provider_token}`,
       },
     }
   );
   const spotifyData2 = await spotifyResponse2.json();
+
+  if (spotifyData2.error) {
+    return Response.json(
+      { error: spotifyData2.error.message },
+      { status: spotifyData2.error.status }
+    );
+  }
 
   const allData = spotifyData.items.concat(spotifyData2.items);
 
@@ -56,5 +70,5 @@ export async function GET() {
     };
   });
 
-  return Response.json(tracks);
+  return Response.json({ tracks });
 }

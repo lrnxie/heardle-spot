@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { LoaderCircle } from 'lucide-react';
 import { cn, randomPick } from '@/lib/utils';
 import { MAX_ATTEMPT, SKIP_STEPS, TOTAL_QUESTIONS } from '@/lib/constants';
@@ -30,17 +31,32 @@ export default function GamePage() {
 
   useEffect(() => {
     async function fetchTopItems() {
-      const response = await fetch('/api/spotify');
-      const data = await response.json();
+      const loadingToast = toast.loading('Loading songs from your Spotify...');
 
-      setAvilableTracks(data);
-      setAnswers(randomPick(data, TOTAL_QUESTIONS));
+      try {
+        const response = await fetch('/api/spotify');
+        const { tracks, error } = await response.json();
+
+        toast.dismiss(loadingToast);
+
+        if (!response.ok) {
+          return toast.error(error);
+        }
+
+        setAvilableTracks(tracks);
+        setAnswers(randomPick(tracks, TOTAL_QUESTIONS));
+        setIsDemo(false);
+      } catch (error) {
+        console.error(error);
+        setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
+        toast.dismiss(loadingToast);
+        toast.info('Internal server error. Running demo game instead.');
+      }
     }
 
     if (isLoaded) {
       if (user) {
         fetchTopItems();
-        setIsDemo(false);
       } else {
         setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
       }
