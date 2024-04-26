@@ -1,7 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useContext, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { FormEvent, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { LoaderCircle } from 'lucide-react';
 import { cn, randomPick } from '@/lib/utils';
@@ -17,7 +16,6 @@ import { DEFAULT_TRACKS } from '@/data';
 
 export default function GamePage() {
   const { isLoaded } = useContext(SessionContext);
-  const searchParams = useSearchParams();
 
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -57,11 +55,7 @@ export default function GamePage() {
     }
 
     if (isLoaded) {
-      if (searchParams.has('demo')) {
-        setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
-      } else {
-        fetchTopItems();
-      }
+      fetchTopItems();
     }
   }, [isLoaded]);
 
@@ -86,97 +80,93 @@ export default function GamePage() {
   }
 
   return (
-    <Suspense>
-      <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
-        {answers.length === 0 ? (
-          <div className="mb-4 mt-24">
-            <LoaderCircle className="size-10 animate-spin text-gray-300" />
-          </div>
-        ) : currentQuestion < TOTAL_QUESTIONS ? (
-          <>
-            <GuessResults
-              guesses={guesses}
-              answers={answers}
-              gameStatus={gameStatus}
-              currentQuestion={currentQuestion}
+    <main className="mx-auto flex h-full max-w-3xl flex-col items-center">
+      {answers.length === 0 ? (
+        <div className="mb-4 mt-24">
+          <LoaderCircle className="size-10 animate-spin text-gray-300" />
+        </div>
+      ) : currentQuestion < TOTAL_QUESTIONS ? (
+        <>
+          <GuessResults
+            guesses={guesses}
+            answers={answers}
+            gameStatus={gameStatus}
+            currentQuestion={currentQuestion}
+          />
+
+          <div className="flex h-full w-full flex-col justify-end p-2">
+            <SongPlayer
+              src={answers[currentQuestion].previewUrl}
+              attempt={
+                gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1
+              }
             />
 
-            <div className="flex h-full w-full flex-col justify-end p-2">
-              <SongPlayer
-                src={answers[currentQuestion].previewUrl}
-                attempt={
-                  gameStatus === 'running' ? guesses.length : MAX_ATTEMPT - 1
-                }
+            <form
+              className="mt-3 rounded"
+              id="guess-form"
+              onSubmit={handleSubmitGuess}
+            >
+              <GuessInput
+                tentativeGuess={tentativeGuess}
+                setTentativeGuess={setTentativeGuess}
+                gameStatus={gameStatus}
+                guessOptions={avilableTracks}
               />
+            </form>
 
-              <form
-                className="mt-3 rounded"
-                id="guess-form"
-                onSubmit={handleSubmitGuess}
-              >
-                <GuessInput
-                  tentativeGuess={tentativeGuess}
-                  setTentativeGuess={setTentativeGuess}
-                  gameStatus={gameStatus}
-                  guessOptions={avilableTracks}
-                />
-              </form>
-
-              <div
-                className={cn(
-                  'mt-3 flex',
-                  gameStatus === 'running' ? 'justify-between' : 'justify-end'
-                )}
-              >
-                {gameStatus === 'running' ? (
-                  <>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setGuesses([...guesses, { displayName: 'Skipped' }]);
-                        setTentativeGuess(null);
-
-                        if (attempt < MAX_ATTEMPT) {
-                          setAttepmt(attempt + 1);
-                        } else {
-                          setGameStatus('lost');
-                        }
-                      }}
-                    >
-                      Skip
-                      {attempt < MAX_ATTEMPT
-                        ? ` (+${SKIP_STEPS[attempt - 1]}s)`
-                        : null}
-                    </Button>
-
-                    <Button type="submit" form="guess-form">
-                      Submit
-                    </Button>
-                  </>
-                ) : null}
-
-                {gameStatus !== 'running' ? (
+            <div
+              className={cn(
+                'mt-3 flex',
+                gameStatus === 'running' ? 'justify-between' : 'justify-end'
+              )}
+            >
+              {gameStatus === 'running' ? (
+                <>
                   <Button
+                    variant="secondary"
                     onClick={() => {
-                      setAttepmt(1);
-                      setGuesses([]);
-                      setGameStatus('running');
+                      setGuesses([...guesses, { displayName: 'Skipped' }]);
                       setTentativeGuess(null);
-                      setCurrentQuestion(currentQuestion + 1);
+
+                      if (attempt < MAX_ATTEMPT) {
+                        setAttepmt(attempt + 1);
+                      } else {
+                        setGameStatus('lost');
+                      }
                     }}
                   >
-                    {currentQuestion === TOTAL_QUESTIONS - 1
-                      ? 'Result'
-                      : 'Next'}
+                    Skip
+                    {attempt < MAX_ATTEMPT
+                      ? ` (+${SKIP_STEPS[attempt - 1]}s)`
+                      : null}
                   </Button>
-                ) : null}
-              </div>
+
+                  <Button type="submit" form="guess-form">
+                    Submit
+                  </Button>
+                </>
+              ) : null}
+
+              {gameStatus !== 'running' ? (
+                <Button
+                  onClick={() => {
+                    setAttepmt(1);
+                    setGuesses([]);
+                    setGameStatus('running');
+                    setTentativeGuess(null);
+                    setCurrentQuestion(currentQuestion + 1);
+                  }}
+                >
+                  {currentQuestion === TOTAL_QUESTIONS - 1 ? 'Result' : 'Next'}
+                </Button>
+              ) : null}
             </div>
-          </>
-        ) : (
-          <Result score={score} tracks={avilableTracks} isDemo={isDemo} />
-        )}
-      </main>
-    </Suspense>
+          </div>
+        </>
+      ) : (
+        <Result score={score} tracks={avilableTracks} isDemo={isDemo} />
+      )}
+    </main>
   );
 }

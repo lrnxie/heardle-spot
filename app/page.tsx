@@ -48,10 +48,7 @@ export default function Home() {
                   {isLoggingIn ? 'Loading...' : 'Get started'}
                 </Button>
                 <Link
-                  href={{
-                    pathname: '/game',
-                    query: { demo: '1' },
-                  }}
+                  href="/game"
                   className={buttonVariants({ variant: 'ghost' })}
                 >
                   Demo game
