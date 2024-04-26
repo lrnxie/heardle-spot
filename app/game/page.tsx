@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useContext, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { LoaderCircle } from 'lucide-react';
 import { cn, randomPick } from '@/lib/utils';
@@ -15,7 +16,8 @@ import Result from './_components/result';
 import { DEFAULT_TRACKS } from '@/data';
 
 export default function GamePage() {
-  const { isLoaded, user } = useContext(SessionContext);
+  const { isLoaded } = useContext(SessionContext);
+  const searchParams = useSearchParams();
 
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -40,12 +42,12 @@ export default function GamePage() {
         toast.dismiss(loadingToast);
 
         if (!response.ok) {
-          return toast.error(error);
+          toast.error(`${error}. Running demo game instead.`);
         }
 
-        setAvilableTracks(tracks);
-        setAnswers(randomPick(tracks, TOTAL_QUESTIONS));
-        setIsDemo(false);
+        setAvilableTracks(tracks ?? DEFAULT_TRACKS);
+        setAnswers(randomPick(tracks ?? DEFAULT_TRACKS, TOTAL_QUESTIONS));
+        setIsDemo(!response.ok);
       } catch (error) {
         console.error(error);
         setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
@@ -54,14 +56,14 @@ export default function GamePage() {
       }
     }
 
-    if (isLoaded && answers.length === 0) {
-      if (user) {
-        fetchTopItems();
-      } else {
+    if (isLoaded) {
+      if (searchParams.has('demo')) {
         setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
+      } else {
+        fetchTopItems();
       }
     }
-  }, [isLoaded, user]);
+  }, [isLoaded]);
 
   function handleSubmitGuess(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
