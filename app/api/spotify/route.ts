@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { TOTAL_QUESTIONS } from '@/lib/constants';
 
 export async function GET() {
   const supabase = createClient();
@@ -8,6 +9,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user || getUserError) {
+    getUserError && console.error({ getUserError });
     return Response.json({ error: 'User not found' }, { status: 401 });
   }
 
@@ -17,6 +19,7 @@ export async function GET() {
   } = await supabase.auth.getSession();
 
   if (!session || getSessionError) {
+    getSessionError && console.error({ getSessionError });
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -31,6 +34,7 @@ export async function GET() {
   const spotifyData = await spotifyResponse.json();
 
   if (spotifyData.error) {
+    console.error('Error fetching Spotify data', spotifyData);
     return Response.json(
       { error: spotifyData.error.message },
       { status: spotifyData.error.status }
@@ -48,6 +52,7 @@ export async function GET() {
   const spotifyData2 = await spotifyResponse2.json();
 
   if (spotifyData2.error) {
+    console.error('Error fetching Spotify data', spotifyData2);
     return Response.json(
       { error: spotifyData2.error.message },
       { status: spotifyData2.error.status }
@@ -56,13 +61,18 @@ export async function GET() {
 
   const allData = spotifyData.items.concat(spotifyData2.items);
 
+  if (allData.length < TOTAL_QUESTIONS) {
+    console.error('Insufficient data');
+    return Response.json({ error: 'Insufficient data' }, { status: 400 });
+  }
+
   const tracks = allData.map((item: any) => {
     return {
       id: item.id,
       title: item.name,
       artist: item.artists.map((_artist: any) => _artist.name).join(', '),
       albumImage:
-        item.album.images.find((image: any) => image.width === 300)?.url ??
+        item.album.images.find((image: any) => image.width === 300)?.url ||
         item.album.images[0].url,
       url: item.external_urls.spotify,
       previewUrl: item.preview_url,

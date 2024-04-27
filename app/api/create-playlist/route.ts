@@ -15,26 +15,25 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user || getUserError) {
+    getUserError && console.error({ getUserError });
     return Response.json({ error: 'User not found' }, { status: 401 });
   }
 
+  const spotifyUserId =
+    user.identities?.find((identity) => identity.provider === 'spotify')?.id ||
+    '';
   const {
     data: { session },
     error: getSessionError,
   } = await supabase.auth.getSession();
 
-  if (
-    !session ||
-    getSessionError ||
-    !session.user.identities?.some(
-      (identity) => identity.provider === 'spotify'
-    )
-  ) {
+  if (!session || getSessionError || !spotifyUserId) {
+    getSessionError && console.error({ getSessionError });
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const createPlaylistResponse = await fetch(
-    `https://api.spotify.com/v1/users/${session.user.identities[0].id}/playlists`,
+    `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
     {
       method: 'POST',
       headers: {
@@ -52,6 +51,7 @@ export async function POST(request: Request) {
   const playlistData = await createPlaylistResponse.json();
 
   if (playlistData.error || !playlistData.id) {
+    console.error(playlistData);
     return Response.json(
       {
         error:
@@ -78,6 +78,7 @@ export async function POST(request: Request) {
   const itemsData = await addItemsResponse.json();
 
   if (itemsData.error) {
+    console.error(itemsData);
     return Response.json(
       { error: itemsData.error.message },
       { status: itemsData.error.status }
