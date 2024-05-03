@@ -42,8 +42,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         name: 'My Top Songs',
-        description:
-          'Created by HeardleSpot - https://heardle-spot.vercel.app/',
+        description: 'Created by HeardleSpot - https://heardlespot.vercel.app/',
         public: true,
       }),
     }
