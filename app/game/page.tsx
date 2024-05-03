@@ -30,8 +30,8 @@ export default function GamePage() {
   const [isDemo, setIsDemo] = useState(true);
 
   useEffect(() => {
-    async function fetchTopItems() {
-      const loadingToast = toast.loading('Loading songs from your Spotify...');
+    async function fetchSongs() {
+      const loadingToast = toast.loading('Loading songs from Spotify...');
 
       try {
         const response = await fetch('/api/spotify');
@@ -40,11 +40,15 @@ export default function GamePage() {
         toast.dismiss(loadingToast);
 
         if (!response.ok) {
-          toast.error(`${error}. Running demo game instead.`);
+          if (response.status === 401) {
+            toast.info('You&apos;re not logged in. Running demo game.');
+          } else {
+            toast.error(`${error}. Running demo game instead.`);
+          }
         }
 
-        setAvilableTracks(tracks ?? DEFAULT_TRACKS);
-        setAnswers(randomPick(tracks ?? DEFAULT_TRACKS, TOTAL_QUESTIONS));
+        setAvilableTracks(tracks || DEFAULT_TRACKS);
+        setAnswers(randomPick(tracks || DEFAULT_TRACKS, TOTAL_QUESTIONS));
         setIsDemo(!response.ok);
       } catch (error) {
         console.error(error);
@@ -55,7 +59,7 @@ export default function GamePage() {
     }
 
     if (isLoaded) {
-      fetchTopItems();
+      fetchSongs();
     }
   }, [isLoaded]);
 

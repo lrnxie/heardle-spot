@@ -18,9 +18,9 @@ export async function GET() {
     error: getSessionError,
   } = await supabase.auth.getSession();
 
-  if (!session || getSessionError) {
+  if (!session || getSessionError || !session.provider_token) {
     getSessionError && console.error({ getSessionError });
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
   const spotifyResponse = await fetch(
