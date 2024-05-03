@@ -63,8 +63,8 @@ export default function Result({
       <span className="text-4xl font-semibold">{score}</span>
 
       <p className="text-pretty text-center text-sm text-gray-200">
-        Songs are randomly selected from{' '}
-        {isDemo ? 'this playlist' : 'your top-listened 100 songs'}
+        Songs are selected randomly from{' '}
+        {isDemo ? 'this playlist' : 'your top 100 most played songs'}
       </p>
 
       {isDemo ? (

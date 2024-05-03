@@ -58,7 +58,7 @@ export default function GuessInput({
                 value={track}
                 className={({ active }) =>
                   cn(
-                    'relative cursor-default select-none py-2 pl-3 pr-9 text-white',
+                    'relative cursor-default select-none py-2 pl-3 pr-9 text-sm text-white',
                     active && 'bg-gray-800'
                   )
                 }

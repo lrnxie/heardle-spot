@@ -41,7 +41,9 @@ export default function GamePage() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            toast.info('You&apos;re not logged in. Running demo game.');
+            toast.info('You&apos;re not logged in. Running demo game.', {
+              duration: 2000,
+            });
           } else {
             toast.error(`${error}. Running demo game instead.`);
           }
@@ -54,7 +56,7 @@ export default function GamePage() {
         console.error(error);
         setAnswers(randomPick(DEFAULT_TRACKS, TOTAL_QUESTIONS));
         toast.dismiss(loadingToast);
-        toast.info('Internal server error. Running demo game instead.');
+        toast.error('Internal server error. Running demo game instead.');
       }
     }
 
