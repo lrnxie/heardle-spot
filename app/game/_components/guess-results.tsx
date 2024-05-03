@@ -16,7 +16,7 @@ export default function GuessResults({
   currentQuestion: number;
 }) {
   return (
-    <div className="mb-4 mt-16 w-full max-w-xl space-y-2.5 p-1.5 sm:space-y-3">
+    <div className="mb-3 mt-14 w-full max-w-xl space-y-2.5 p-1.5 sm:mt-16 sm:space-y-3">
       {range(1, MAX_ATTEMPT + 1).map((num, index) => {
         const thisGuess = guesses[index];
         const isCorrectGuess =
@@ -26,7 +26,7 @@ export default function GuessResults({
           <div
             key={num}
             className={cn(
-              'flex h-12 w-full items-center rounded border p-1.5',
+              'flex h-11 w-full items-center rounded border p-1.5 sm:h-12',
               (index === guesses.length && gameStatus === 'running') ||
                 isCorrectGuess
                 ? 'border-gray-300'
